@@ -1,0 +1,86 @@
+{% extends "clients/base_dashboard.html" %}
+{% load humanize %}
+
+{% block title %}To‘lovlar{% endblock %}
+
+{% block page_style %}
+    :root {
+        --page-bg: radial-gradient(1200px 600px at 10% -10%, #dcfce7, transparent 60%),
+            radial-gradient(1200px 600px at 90% -20%, #fee2e2, transparent 55%),
+            var(--bg);
+    }
+
+    .panel-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .btn.small {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .gap-right-lg {
+        padding-right: 24px;
+    }
+{% endblock %}
+
+{% block page_title %}To‘lovlar{% endblock %}
+{% block page_subtitle %}Barcha to‘lovlar ro‘yxati.{% endblock %}
+{% block menu_payments_active %}active{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="panel-header">
+            <h2>Ro‘yxat</h2>
+            <div class="panel-actions">
+                <span class="count">{{ page_obj.paginator.count|intcomma }} ta</span>
+                {% if request.user.role == "client" %}
+                    <a class="btn small" href="/dashboard/payments/new/">+ Yangi</a>
+                {% endif %}
+            </div>
+        </div>
+        {% if payments %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mijoz</th>
+                        <th>Sana</th>
+                        <th class="gap-right-lg">Summasi</th>
+                        <th>Izoh</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                        <tr>
+                            <td>{{ p.client }}</td>
+                            <td>{{ p.date|date:"d.m.Y" }}</td>
+                            <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
+                            <td>{{ p.note|default:"-" }}</td>
+                            <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty">Hozircha to‘lovlar yo‘q.</p>
+        {% endif %}
+    </section>
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Oldingi</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+            <div class="page-info">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</div>
+            {% if page_obj.has_next %}
+                <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Keyingi</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

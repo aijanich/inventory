@@ -16,7 +16,11 @@ RUN python -m venv /py && \
         build-base postgresql-dev musl-dev libffi-dev && \
     /py/bin/pip install -r /requirements.txt && \
     apk del .tmp-deps && \
-    adduser -D app
+    adduser -D app && \
+    mkdir -p /vol/web/static && \
+    mkdir -p /vol/web/media && \
+    chown -R app:app /vol && \
+    chown -R 775 /vol
 
 ENV PATH="/py/bin:$PATH"
 

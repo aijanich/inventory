@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f3f5f8;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #0f766e;
+            --primary-strong: #0b5d57;
+            --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+            --radius: 16px;
+        }
+
+        {% block page_style %}{% endblock %}
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+            color: var(--text);
+            background: var(--page-bg, var(--bg));
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 20px 60px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top h1 {
+            margin: 0 0 6px;
+            font-size: 30px;
+            letter-spacing: 0.2px;
+        }
+
+
+        .top .sub {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .menu {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .menu-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: var(--primary-strong);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .menu-link.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            background: var(--primary);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(15, 118, 110, 0.2);
+        }
+
+        .btn.ghost {
+            background: #fff;
+            color: var(--primary);
+            border-color: #cbd5f5;
+        }
+
+        .user-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .panel {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid #eef2ff;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .count {
+            background: #eef2ff;
+            color: var(--muted);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px 0;
+            border-bottom: 1px solid #eef2ff;
+            font-size: 14px;
+        }
+
+        th {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .amount {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .empty {
+            color: var(--muted);
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 0;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 18px;
+            gap: 12px;
+        }
+
+        .pagination .btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .page-info {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        @media (max-width: 720px) {
+            .top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .btn.ghost {
+                width: 100%;
+            }
+
+            .menu {
+                width: 100%;
+            }
+
+            .menu-link {
+                flex: 1 1 auto;
+                justify-content: center;
+            }
+
+            .pagination {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .footer {
+            position: sticky;
+            bottom: 0;
+            height: 56px;
+            padding: 0 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="top">
+            <div>
+                <h1>{% block page_title %}{% endblock %}</h1>
+                <p class="sub">{% block page_subtitle %}{% endblock %}</p>
+                {% block header_meta %}{% endblock %}
+                <nav class="menu">
+                    <a class="menu-link {% block menu_dashboard_active %}{% endblock %}" href="/dashboard/">Dashboard</a>
+                    <a class="menu-link {% block menu_products_active %}{% endblock %}" href="/dashboard/products/">Mahsulotlar</a>
+                    <a class="menu-link {% block menu_colors_active %}{% endblock %}" href="/dashboard/colors/">Ranglar</a>
+                </nav>
+                {% block header_after_menu %}{% endblock %}
+            </div>
+            <div class="top-actions">
+                <span class="user-pill">Kirish: {{ request.user.username }}</span>
+                <a class="btn ghost" href="{% url 'logout' %}">Chiqish</a>
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+    </div>
+    <footer class="footer">
+        Inventar tizimi
+    </footer>
+</body>
+</html>

@@ -1,0 +1,131 @@
+{% extends "clients/base_dashboard.html" %}
+{% load humanize %}
+
+{% block title %}Mahsulotlar{% endblock %}
+
+{% block page_style %}
+    :root {
+        --page-bg: radial-gradient(1200px 600px at 10% -10%, #e0f2fe, transparent 60%),
+            radial-gradient(1200px 600px at 90% -20%, #fef3c7, transparent 55%),
+            var(--bg);
+    }
+
+    .panel-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .btn.small {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .cell-gap {
+        padding-right: 32px;
+    }
+
+    .cell-right {
+        text-align: right;
+    }
+
+    .thumb-wrap {
+        position: relative;
+        display: inline-block;
+    }
+
+    .thumb {
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .thumb-wrap:hover .thumb {
+        transform: scale(5);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+        z-index: 2;
+    }
+
+    .thumb-wrap:hover {
+        z-index: 2;
+    }
+{% endblock %}
+
+{% block page_title %}Mahsulotlar{% endblock %}
+{% block page_subtitle %}Mahsulotlar ro‘yxati va tafsilotlari.{% endblock %}
+{% block menu_products_active %}active{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="panel-header">
+            <h2>Ro‘yxat</h2>
+            <div class="panel-actions">
+                <span class="count">{{ page_obj.paginator.count|intcomma }} ta</span>
+                {% if request.user.is_staff or request.user.role == "admin" %}
+                    <a class="btn small" href="/dashboard/products/new/">+ Yangi</a>
+                {% endif %}
+            </div>
+        </div>
+        {% if products %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nomi</th>
+                        <th>Kod</th>
+                        <th>Narxi</th>
+                        <th class="cell-gap cell-right">Izoh</th>
+                        <th>Rasm</th>
+                        {% if request.user.is_staff or request.user.role == "admin" %}
+                            <th></th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                        <tr>
+                            <td>{{ p.name }}</td>
+                            <td>{{ p.code }}</td>
+                            <td class="amount">{{ p.price|floatformat:2|intcomma }}</td>
+                            <td class="cell-gap cell-right">{{ p.comment|default:"-" }}</td>
+                            <td>
+                                {% if p.image %}
+                                    <span class="thumb-wrap">
+                                        <img class="thumb" src="{{ p.image.url }}" alt="{{ p.name }}">
+                                    </span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            {% if request.user.is_staff or request.user.role == "admin" %}
+                                <td class="amount">
+                                    <a href="/dashboard/products/{{ p.id }}/edit/">Tahrirlash</a>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty">Hozircha mahsulotlar yo‘q.</p>
+        {% endif %}
+    </section>
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Oldingi</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+            <div class="page-info">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</div>
+            {% if page_obj.has_next %}
+                <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Keyingi</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

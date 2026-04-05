@@ -3,12 +3,14 @@ services:
     build:
       context: .
     command: >
-       sh -c "python manage.py migrate && 
-              python manage.py runserver 0.0.0.0:8000"
+      sh -c "sleep 5 &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     ports:
       - 8000:8000
     volumes:
       - ./app:/app
+      - ./data/web:/vol/web
     environment:
       - SECRET_KEY=decsecretkey
       - DEBUG=1
@@ -17,9 +19,17 @@ services:
       - DB_PASS=password
     depends_on:
       - db
+
   db:
     image: postgres:13-alpine
+    ports:
+      - 5432:5432
     environment:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

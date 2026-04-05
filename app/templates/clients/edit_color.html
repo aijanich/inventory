@@ -1,0 +1,96 @@
+{% extends "clients/base_dashboard.html" %}
+
+{% block title %}Rangni tahrirlash{% endblock %}
+
+{% block page_style %}
+    :root {
+        --page-bg: radial-gradient(900px 600px at 15% -20%, #fde68a, transparent 60%),
+            radial-gradient(900px 600px at 90% 10%, #bfdbfe, transparent 60%),
+            var(--bg);
+    }
+
+    .form-card {
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 24px;
+        border-radius: 18px;
+        background: var(--card);
+        box-shadow: var(--shadow);
+        border: 1px solid #e5e7eb;
+    }
+
+    .form-card h2 {
+        margin: 0 0 8px;
+        font-size: 22px;
+    }
+
+    .form-card p {
+        margin: 0 0 16px;
+        color: var(--muted);
+    }
+
+    .form-card form {
+        display: grid;
+        gap: 14px;
+    }
+
+    .form-card form p {
+        margin: 0;
+    }
+
+    .form-card label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+    }
+
+    .form-card input,
+    .form-card select,
+    .form-card textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        font-size: 14px;
+    }
+
+    .form-card input:focus,
+    .form-card select:focus,
+    .form-card textarea:focus {
+        outline: 2px solid rgba(15, 118, 110, 0.2);
+        border-color: var(--primary);
+    }
+
+    .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 4px;
+    }
+
+    @media (max-width: 520px) {
+        .actions {
+            grid-template-columns: 1fr;
+        }
+    }
+{% endblock %}
+
+{% block page_title %}Rangni tahrirlash{% endblock %}
+{% block page_subtitle %}Ma'lumotlarni yangilang va saqlang.{% endblock %}
+{% block menu_colors_active %}active{% endblock %}
+
+{% block content %}
+    <section class="form-card">
+        <h2>Rangni tahrirlash</h2>
+        <p>{{ color.name }} ma'lumotlarini yangilang va saqlang.</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="actions">
+                <button class="btn" type="submit">Saqlash</button>
+                <a class="btn ghost" href="/dashboard/colors/">Orqaga</a>
+            </div>
+        </form>
+    </section>
+{% endblock %}

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kirish</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f3f5f8;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #0f766e;
+            --primary-strong: #0b5d57;
+            --shadow: 0 14px 36px rgba(15, 23, 42, 0.12);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+            color: var(--text);
+            background: radial-gradient(900px 500px at 15% -10%, #dbeafe, transparent 60%),
+                radial-gradient(900px 600px at 90% 10%, #fef3c7, transparent 60%),
+                var(--bg);
+        }
+
+        .shell {
+            width: min(420px, 90vw);
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 28px 26px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e5e7eb;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 26px;
+        }
+
+        p {
+            margin: 0 0 20px;
+            color: var(--muted);
+        }
+
+        form {
+            display: grid;
+            gap: 14px;
+        }
+
+        form p {
+            margin: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: 2px solid rgba(15, 118, 110, 0.2);
+            border-color: var(--primary);
+        }
+
+        .btn {
+            margin-top: 6px;
+            padding: 12px 16px;
+            border-radius: 999px;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(15, 118, 110, 0.2);
+        }
+
+        .hint {
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <div class="card">
+            <h1>Kirish</h1>
+            <p>Hisobingizga kirish uchun ma'lumotlarni kiriting.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn" type="submit">Kirish</button>
+            </form>
+            <div class="hint">Xavfsizlik uchun parolingizni boshqalarga bermang.</div>
+        </div>
+    </div>
+</body>
+</html>

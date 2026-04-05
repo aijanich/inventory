@@ -1,0 +1,85 @@
+{% extends "clients/base_dashboard.html" %}
+{% load humanize %}
+
+{% block title %}Ranglar{% endblock %}
+
+{% block page_style %}
+    :root {
+        --page-bg: radial-gradient(1200px 600px at 10% -10%, #fde68a, transparent 60%),
+            radial-gradient(1200px 600px at 90% -20%, #bfdbfe, transparent 55%),
+            var(--bg);
+    }
+
+    .panel-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .btn.small {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+{% endblock %}
+
+{% block page_title %}Ranglar{% endblock %}
+{% block page_subtitle %}Ranglar spravochnigi.{% endblock %}
+{% block menu_colors_active %}active{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="panel-header">
+            <h2>Ro‘yxat</h2>
+            <div class="panel-actions">
+                <span class="count">{{ page_obj.paginator.count|intcomma }} ta</span>
+                {% if request.user.is_staff or request.user.role == "admin" %}
+                    <a class="btn small" href="/dashboard/colors/new/">+ Yangi</a>
+                {% endif %}
+            </div>
+        </div>
+        {% if colors %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nomi</th>
+                        <th>Izoh</th>
+                        {% if request.user.is_staff or request.user.role == "admin" %}
+                            <th></th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in colors %}
+                        <tr>
+                            <td>{{ c.name }}</td>
+                            <td>{{ c.comment|default:"-" }}</td>
+                            {% if request.user.is_staff or request.user.role == "admin" %}
+                                <td class="amount">
+                                    <a href="/dashboard/colors/{{ c.id }}/edit/">Tahrirlash</a>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty">Hozircha ranglar yo‘q.</p>
+        {% endif %}
+    </section>
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Oldingi</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+            <div class="page-info">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</div>
+            {% if page_obj.has_next %}
+                <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Keyingi</a>
+            {% else %}
+                <span></span>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,272 @@
+{% extends "clients/base_dashboard.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block page_style %}
+    :root {
+        --bg-accent: #e9ecf2;
+        --danger: #b91c1c;
+        --success: #15803d;
+        --page-bg: radial-gradient(1200px 600px at 10% -10%, #dbeafe, transparent 60%),
+            radial-gradient(1200px 600px at 90% -20%, #fce7f3, transparent 55%),
+            var(--bg);
+    }
+
+    .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-bottom: 30px;
+    }
+
+    .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow);
+        border: 1px solid #eef2ff;
+    }
+
+    .card .label {
+        color: var(--muted);
+        font-size: 14px;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+
+    .card .value {
+        font-size: 28px;
+        font-weight: 700;
+        margin-top: 10px;
+    }
+
+    .card.balance {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card.balance::after {
+        content: "";
+        position: absolute;
+        right: -40px;
+        top: -40px;
+        width: 120px;
+        height: 120px;
+        background: rgba(15, 118, 110, 0.08);
+        border-radius: 50%;
+    }
+
+    .balance.debt .value {
+        color: var(--danger);
+    }
+
+    .balance.credit .value {
+        color: var(--success);
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 12px;
+    }
+
+    .pill.debt {
+        background: #fee2e2;
+        color: var(--danger);
+    }
+
+    .pill.credit {
+        background: #dcfce7;
+        color: var(--success);
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 24px;
+    }
+
+    .panel-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .btn.small {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .action a {
+        color: var(--primary-strong);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .action a:hover {
+        text-decoration: underline;
+    }
+
+    .action {
+        padding-left: 16px;
+    }
+
+    .amount {
+        text-align: left;
+    }
+
+    .gap-right {
+        padding-right: 16px;
+    }
+
+    .gap-right-lg {
+        padding-right: 24px;
+    }
+
+    .filter {
+        margin-top: 10px;
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .filter label {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .filter select {
+        padding: 6px 10px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+        background: #fff;
+    }
+{% endblock %}
+
+{% block page_title %}Hisobingiz{% endblock %}
+{% block page_subtitle %}So‘nggi holat va harakatlar shu yerda ko‘rsatiladi.{% endblock %}
+{% block header_meta %}
+{% endblock %}
+
+{% block header_after_menu %}
+    {% if clients %}
+        <form method="get" class="filter">
+            <label for="client">Foydalanuvchi bo‘yicha</label>
+            <select id="client" name="client" onchange="this.form.submit()">
+                <option value="">Hammasi</option>
+                {% for c in clients %}
+                    <option value="{{ c.id }}"{% if selected_client_id == c.id|stringformat:"s" %} selected{% endif %}>
+                        {{ c.user.username }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    {% endif %}
+{% endblock %}
+{% block menu_dashboard_active %}active{% endblock %}
+
+{% block content %}
+        <section class="summary">
+            <div class="card">
+                <div class="label">Jami tovar</div>
+                <div class="value">{{ total_products|floatformat:2|intcomma }}</div>
+            </div>
+            <div class="card">
+                <div class="label">Jami to‘lov</div>
+                <div class="value">{{ total_payments|floatformat:2|intcomma }}</div>
+            </div>
+            <div class="card balance {% if balance > 0 %}debt{% else %}credit{% endif %}">
+                <div class="label">{% if balance > 0 %}Qarz{% else %}Balans{% endif %}</div>
+                <div class="value">{{ balance|floatformat:2|intcomma }}</div>
+                <div class="pill {% if balance > 0 %}debt{% else %}credit{% endif %}">
+                    {% if balance > 0 %}Tolov kutilmoqda{% else %}Barqaror holat{% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Oxirgi tovarlar</h2>
+                    <div class="panel-actions">
+                        <span class="count">{{ transactions|length|intcomma }} ta</span>
+                        {% if request.user.is_staff or request.user.role == "admin" %}
+                            <a class="btn small" href="/transactions/transaction/new/">+ Yangi</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if transactions %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sana</th>
+                                <th>Tovar</th>
+                                <th>Rang</th>
+                                <th class="gap-right">Soni</th>
+                                <th>Narxi</th>
+                                <th>Summasi</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in transactions %}
+                                <tr>
+                                    <td>{{ t.date|date:"d.m.Y" }}</td>
+                                    <td>{{ t.product.name }}</td>
+                                    <td>{{ t.color|default:"-" }}</td>
+                                    <td class="amount gap-right">{{ t.quantity|floatformat:2|intcomma }}</td>
+                                    <td class="amount">{{ t.price|floatformat:2|intcomma }}</td>
+                                    <td class="amount">{{ t.total_amount|floatformat:2|intcomma }}</td>
+                                    <td class="action"><a href="{% url 'edit_transaction' t.id %}">Tahrirlash</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="empty">Hozircha tovarlar kiritilmagan.</p>
+                {% endif %}
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Oxirgi to‘lovlar</h2>
+                    <div class="panel-actions">
+                        <span class="count">{{ payments|length|intcomma }} ta</span>
+                        {% if request.user.role == "client" %}
+                            <a class="btn small" href="/dashboard/payments/new/">+ Yangi</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if payments %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sana</th>
+                                <th class="gap-right-lg">Summasi</th>
+                                <th>Izoh</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in payments %}
+                                <tr>
+                                    <td>{{ p.date|date:"d.m.Y" }}</td>
+                                    <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
+                                    <td>{{ p.note|default:"-" }}</td>
+                                    <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="empty">Hozircha to‘lovlar yo‘q.</p>
+                {% endif %}
+            </div>
+        </section>
+{% endblock %}
