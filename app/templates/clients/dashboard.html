@@ -147,6 +147,13 @@
         font-size: 13px;
         background: #fff;
     }
+
+    .filter-actions {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        margin-left: 10px;
+    }
 {% endblock %}
 
 {% block page_title %}Hisobingiz{% endblock %}
@@ -156,17 +163,27 @@
 
 {% block header_after_menu %}
     {% if clients %}
-        <form method="get" class="filter">
-            <label for="client">Foydalanuvchi bo‘yicha</label>
-            <select id="client" name="client" onchange="this.form.submit()">
-                <option value="">Hammasi</option>
-                {% for c in clients %}
-                    <option value="{{ c.id }}"{% if selected_client_id == c.id|stringformat:"s" %} selected{% endif %}>
-                        {{ c.user.username }}
-                    </option>
-                {% endfor %}
-            </select>
-        </form>
+        <div class="filter">
+            <form method="get">
+                <label for="client">Foydalanuvchi bo‘yicha</label>
+                <select id="client" name="client" onchange="this.form.submit()">
+                    <option value="">Hammasi</option>
+                    {% for c in clients %}
+                        <option value="{{ c.id }}"{% if selected_client_id == c.id|stringformat:"s" %} selected{% endif %}>
+                            {{ c.user.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+            <div class="filter-actions">
+                <a class="btn small" href="{% url 'dashboard_transactions_export_csv' %}{% if selected_client_id %}?client={{ selected_client_id }}{% endif %}">
+                    Export Excel
+                </a>
+                <a class="btn small" href="{% url 'dashboard_transactions_export_pdf' %}{% if selected_client_id %}?client={{ selected_client_id }}{% endif %}">
+                    Export PDF
+                </a>
+            </div>
+        </div>
     {% endif %}
 {% endblock %}
 {% block menu_dashboard_active %}active{% endblock %}

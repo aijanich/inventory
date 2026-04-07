@@ -30,7 +30,7 @@ def create_payment(request):
         raise PermissionDenied()
 
     if request.method == "POST":
-        form = PaymentForm(request.POST)
+        form = ClientPaymentForm(request.POST)
 
         if form.is_valid():
             payment = form.save(commit=False)
@@ -40,24 +40,9 @@ def create_payment(request):
             return redirect("client_dashboard")
 
     else:
-        form = PaymentForm()
+        form = ClientPaymentForm()
 
-    return render(request, "payments/create_payment.html", {"form": form})
-
-@login_required
-def client_dashboard(request):
-
-    profile = request.user.profile
-
-    transactions = ProductTransaction.objects.filter(client=profile)
-    payments = Payment.objects.filter(client=profile)
-
-    context = {
-        "transactions": transactions,
-        "payments": payments,
-    }
-
-    return render(request, "clients/dashboard.html", context)
+    return render(request, "clients/create_payment.html", {"form": form})
 
 @login_required
 def edit_transaction(request, pk):

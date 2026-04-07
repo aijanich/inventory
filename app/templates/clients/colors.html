@@ -43,6 +43,7 @@
                 <thead>
                     <tr>
                         <th>Nomi</th>
+                        <th>Kod</th>
                         <th>Izoh</th>
                         {% if request.user.is_staff or request.user.role == "admin" %}
                             <th></th>
@@ -53,6 +54,7 @@
                     {% for c in colors %}
                         <tr>
                             <td>{{ c.name }}</td>
+                            <td>{{ c.code }}</td>
                             <td>{{ c.comment|default:"-" }}</td>
                             {% if request.user.is_staff or request.user.role == "admin" %}
                                 <td class="amount">

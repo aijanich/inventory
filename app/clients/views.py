@@ -3,6 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 from django.core.paginator import Paginator
+from django.http import HttpResponse
+from django.utils import timezone
+import csv
 from transactions.models import ProductTransaction, Payment
 from clients.models import ClientProfile
 from transactions.forms import ClientPaymentForm
@@ -185,7 +188,7 @@ def dashboard_payment_create(request):
 def dashboard_product_edit(request, pk):
 
     if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
-        return redirect("admin:index")  # yoki login sahifaga
+        return redirect("login")
 
     if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
         raise PermissionDenied()
@@ -209,7 +212,7 @@ def dashboard_product_edit(request, pk):
 def dashboard_color_edit(request, pk):
 
     if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
-        return redirect("admin:index")  # yoki login sahifaga
+        return redirect("login")
 
     if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
         raise PermissionDenied()
@@ -227,3 +230,94 @@ def dashboard_color_edit(request, pk):
         form = ColorForm(instance=color)
 
     return render(request, "clients/edit_color.html", {"form": form, "color": color})
+
+
+@login_required
+def export_transactions_csv(request):
+
+    is_admin = request.user.is_staff or getattr(request.user, "role", "") == "admin"
+    if not is_admin and not hasattr(request.user, "profile"):
+        return redirect("login")
+
+    selected_client_id = request.GET.get("client")
+    transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-date")
+    if is_admin and selected_client_id:
+        transactions = transactions.filter(client_id=selected_client_id)
+    elif not is_admin:
+        transactions = transactions.filter(client__user=request.user)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="transactions.csv"'
+    writer = csv.writer(response)
+    writer.writerow(["Sana", "Mijoz", "Tovar", "Rang", "Soni", "Narxi", "Summasi"])
+    for t in transactions:
+        writer.writerow([
+            t.date.strftime("%d.%m.%Y") if t.date else "",
+            str(t.client),
+            t.product.name if t.product else "",
+            str(t.color) if t.color else "",
+            f"{t.quantity:.2f}",
+            f"{t.price:.2f}" if t.price is not None else "",
+            f"{t.total_amount:.2f}" if t.total_amount is not None else "",
+        ])
+    return response
+
+
+@login_required
+def export_transactions_pdf(request):
+
+    is_admin = request.user.is_staff or getattr(request.user, "role", "") == "admin"
+    if not is_admin and not hasattr(request.user, "profile"):
+        return redirect("login")
+
+    selected_client_id = request.GET.get("client")
+    transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-date")
+    if is_admin and selected_client_id:
+        transactions = transactions.filter(client_id=selected_client_id)
+    elif not is_admin:
+        transactions = transactions.filter(client__user=request.user)
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="transactions.pdf"'
+    pdf = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(40, height - 40, "Oxirgi tovarlar eksporti")
+    pdf.setFont("Helvetica", 9)
+    pdf.drawString(40, height - 55, timezone.now().strftime("%d.%m.%Y %H:%M"))
+
+    y = height - 80
+    pdf.setFont("Helvetica-Bold", 8)
+    headers = ["Sana", "Mijoz", "Tovar", "Rang", "Soni", "Narxi", "Summasi"]
+    x_positions = [40, 90, 170, 270, 340, 390, 450]
+    for i, h in enumerate(headers):
+        pdf.drawString(x_positions[i], y, h)
+    y -= 12
+    pdf.setFont("Helvetica", 8)
+
+    for t in transactions:
+        if y < 40:
+            pdf.showPage()
+            y = height - 40
+            pdf.setFont("Helvetica-Bold", 8)
+            for i, h in enumerate(headers):
+                pdf.drawString(x_positions[i], y, h)
+            y -= 12
+            pdf.setFont("Helvetica", 8)
+
+        pdf.drawString(x_positions[0], y, t.date.strftime("%d.%m.%Y") if t.date else "")
+        pdf.drawString(x_positions[1], y, str(t.client)[:12])
+        pdf.drawString(x_positions[2], y, (t.product.name if t.product else "")[:16])
+        pdf.drawString(x_positions[3], y, (str(t.color) if t.color else "")[:8])
+        pdf.drawRightString(x_positions[4] + 25, y, f"{t.quantity:.2f}")
+        pdf.drawRightString(x_positions[5] + 35, y, f"{t.price:.2f}" if t.price is not None else "")
+        pdf.drawRightString(x_positions[6] + 50, y, f"{t.total_amount:.2f}" if t.total_amount is not None else "")
+        y -= 12
+
+    pdf.showPage()
+    pdf.save()
+    return response
