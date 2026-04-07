@@ -5,6 +5,8 @@ from django.db.models import Sum
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.utils import timezone
+from datetime import timedelta, date
+from urllib.parse import urlencode
 import csv
 from transactions.models import ProductTransaction, Payment
 from clients.models import ClientProfile
@@ -22,6 +24,39 @@ def client_dashboard(request):
     if not hasattr(request.user, "profile") and not is_admin:
         return redirect("login")
 
+    date_preset = request.GET.get("date_preset", "")
+    start_date_raw = request.GET.get("start_date", "")
+    end_date_raw = request.GET.get("end_date", "")
+
+    def parse_date(value):
+        try:
+            return date.fromisoformat(value)
+        except (TypeError, ValueError):
+            return None
+
+    def apply_date_filter(queryset):
+        start_date = parse_date(start_date_raw)
+        end_date = parse_date(end_date_raw)
+        if start_date or end_date:
+            if start_date and end_date:
+                return queryset.filter(date__range=(start_date, end_date))
+            if start_date:
+                return queryset.filter(date__gte=start_date)
+            return queryset.filter(date__lte=end_date)
+
+        today = timezone.localdate()
+        if date_preset == "today":
+            return queryset.filter(date=today)
+        if date_preset == "yesterday":
+            return queryset.filter(date=today - timedelta(days=1))
+        if date_preset == "week":
+            start = today - timedelta(days=today.weekday())
+            return queryset.filter(date__range=(start, today))
+        if date_preset == "month":
+            start = today.replace(day=1)
+            return queryset.filter(date__range=(start, today))
+        return queryset
+
     if is_admin:
         selected_client_id = request.GET.get("client")
         clients = (
@@ -38,6 +73,8 @@ def client_dashboard(request):
         profile = request.user.profile
         transactions = ProductTransaction.objects.filter(client=profile).select_related("product", "color")
         payments = Payment.objects.filter(client=profile).select_related("client")
+
+    transactions = apply_date_filter(transactions)
 
     total_products = transactions.aggregate(
         total=Sum("total_amount")
@@ -59,6 +96,19 @@ def client_dashboard(request):
     if is_admin:
         context["clients"] = clients
         context["selected_client_id"] = selected_client_id
+    context["date_preset"] = date_preset
+    context["start_date"] = start_date_raw
+    context["end_date"] = end_date_raw
+    export_params = {}
+    if is_admin and selected_client_id:
+        export_params["client"] = selected_client_id
+    if date_preset:
+        export_params["date_preset"] = date_preset
+    if start_date_raw:
+        export_params["start_date"] = start_date_raw
+    if end_date_raw:
+        export_params["end_date"] = end_date_raw
+    context["export_query"] = urlencode(export_params)
 
     return render(request, "clients/dashboard.html", context)
 
@@ -240,11 +290,44 @@ def export_transactions_csv(request):
         return redirect("login")
 
     selected_client_id = request.GET.get("client")
+    date_preset = request.GET.get("date_preset", "")
+    start_date_raw = request.GET.get("start_date", "")
+    end_date_raw = request.GET.get("end_date", "")
+
+    def parse_date(value):
+        try:
+            return date.fromisoformat(value)
+        except (TypeError, ValueError):
+            return None
+
+    def apply_date_filter(queryset):
+        start_date = parse_date(start_date_raw)
+        end_date = parse_date(end_date_raw)
+        if start_date or end_date:
+            if start_date and end_date:
+                return queryset.filter(date__range=(start_date, end_date))
+            if start_date:
+                return queryset.filter(date__gte=start_date)
+            return queryset.filter(date__lte=end_date)
+
+        today = timezone.localdate()
+        if date_preset == "today":
+            return queryset.filter(date=today)
+        if date_preset == "yesterday":
+            return queryset.filter(date=today - timedelta(days=1))
+        if date_preset == "week":
+            start = today - timedelta(days=today.weekday())
+            return queryset.filter(date__range=(start, today))
+        if date_preset == "month":
+            start = today.replace(day=1)
+            return queryset.filter(date__range=(start, today))
+        return queryset
     transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-date")
     if is_admin and selected_client_id:
         transactions = transactions.filter(client_id=selected_client_id)
     elif not is_admin:
         transactions = transactions.filter(client__user=request.user)
+    transactions = apply_date_filter(transactions)
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="transactions.csv"'
@@ -271,11 +354,44 @@ def export_transactions_pdf(request):
         return redirect("login")
 
     selected_client_id = request.GET.get("client")
+    date_preset = request.GET.get("date_preset", "")
+    start_date_raw = request.GET.get("start_date", "")
+    end_date_raw = request.GET.get("end_date", "")
+
+    def parse_date(value):
+        try:
+            return date.fromisoformat(value)
+        except (TypeError, ValueError):
+            return None
+
+    def apply_date_filter(queryset):
+        start_date = parse_date(start_date_raw)
+        end_date = parse_date(end_date_raw)
+        if start_date or end_date:
+            if start_date and end_date:
+                return queryset.filter(date__range=(start_date, end_date))
+            if start_date:
+                return queryset.filter(date__gte=start_date)
+            return queryset.filter(date__lte=end_date)
+
+        today = timezone.localdate()
+        if date_preset == "today":
+            return queryset.filter(date=today)
+        if date_preset == "yesterday":
+            return queryset.filter(date=today - timedelta(days=1))
+        if date_preset == "week":
+            start = today - timedelta(days=today.weekday())
+            return queryset.filter(date__range=(start, today))
+        if date_preset == "month":
+            start = today.replace(day=1)
+            return queryset.filter(date__range=(start, today))
+        return queryset
     transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-date")
     if is_admin and selected_client_id:
         transactions = transactions.filter(client_id=selected_client_id)
     elif not is_admin:
         transactions = transactions.filter(client__user=request.user)
+    transactions = apply_date_filter(transactions)
 
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
