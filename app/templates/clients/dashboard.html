@@ -128,11 +128,25 @@
         padding-right: 24px;
     }
 
+    .gap-right-sm {
+        padding-right: 12px;
+    }
+
+    .gap-right-xs {
+        padding-right: 10px;
+    }
+
+    .transactions-table th,
+    .transactions-table td {
+        text-align: right;
+    }
+
     .filter {
         margin-top: 10px;
         display: inline-flex;
         gap: 10px;
         align-items: center;
+        flex-wrap: wrap;
     }
 
     .filter label {
@@ -146,6 +160,25 @@
         border: 1px solid #d1d5db;
         font-size: 13px;
         background: #fff;
+    }
+
+    .filter input[type="date"] {
+        padding: 6px 10px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+        background: #fff;
+    }
+
+    .filter .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .filter .icon-btn {
+        padding: 6px 10px;
+        font-size: 14px;
+        line-height: 1;
     }
 
     .filter-actions {
@@ -165,7 +198,7 @@
     {% if clients %}
         <div class="filter">
             <form method="get">
-                <label for="client">Foydalanuvchi bo‘yicha</label>
+                <label for="client">User </label>
                 <select id="client" name="client" onchange="this.form.submit()">
                     <option value="">Hammasi</option>
                     {% for c in clients %}
@@ -174,12 +207,28 @@
                         </option>
                     {% endfor %}
                 </select>
+
+                <label for="date_preset">Sana</label>
+                <select id="date_preset" name="date_preset">
+                    <option value="">Hammasi</option>
+                    <option value="today"{% if date_preset == "today" %} selected{% endif %}>Bugun</option>
+                    <option value="yesterday"{% if date_preset == "yesterday" %} selected{% endif %}>Kecha</option>
+                    <option value="week"{% if date_preset == "week" %} selected{% endif %}>Shu hafta</option>
+                    <option value="month"{% if date_preset == "month" %} selected{% endif %}>Shu oy</option>
+                </select>
+                <label for="start_date">Boshlanish</label>
+                <input id="start_date" name="start_date" type="date" value="{{ start_date }}">
+                <label for="end_date">Tugash</label>
+                <input id="end_date" name="end_date" type="date" value="{{ end_date }}">
+                <button class="btn small icon-btn" type="button" id="clear_filters" title="Tozalash">✕</button>
+                <button class="btn small" type="submit">Filtrlash</button>
+
             </form>
             <div class="filter-actions">
-                <a class="btn small" href="{% url 'dashboard_transactions_export_csv' %}{% if selected_client_id %}?client={{ selected_client_id }}{% endif %}">
+                <a class="btn small" href="{% url 'dashboard_transactions_export_csv' %}{% if export_query %}?{{ export_query }}{% endif %}">
                     Export Excel
                 </a>
-                <a class="btn small" href="{% url 'dashboard_transactions_export_pdf' %}{% if selected_client_id %}?client={{ selected_client_id }}{% endif %}">
+                <a class="btn small" href="{% url 'dashboard_transactions_export_pdf' %}{% if export_query %}?{{ export_query }}{% endif %}">
                     Export PDF
                 </a>
             </div>
@@ -219,12 +268,13 @@
                     </div>
                 </div>
                 {% if transactions %}
-                    <table>
+                    <table class="transactions-table">
                         <thead>
                             <tr>
                                 <th>Sana</th>
-                                <th>Tovar</th>
-                                <th>Rang</th>
+                                <th class="gap-right-sm">Tovar</th>
+                                <th>Mijoz</th>
+                                <th class="gap-right-xs">Rang</th>
                                 <th class="gap-right">Soni</th>
                                 <th>Narxi</th>
                                 <th>Summasi</th>
@@ -235,8 +285,9 @@
                             {% for t in transactions %}
                                 <tr>
                                     <td>{{ t.date|date:"d.m.Y" }}</td>
-                                    <td>{{ t.product.name }}</td>
-                                    <td>{{ t.color|default:"-" }}</td>
+                                    <td class="gap-right-sm">{{ t.product.name }}</td>
+                                    <td>{{ t.client }}</td>
+                                    <td class="gap-right-xs">{{ t.color|default:"-" }}</td>
                                     <td class="amount gap-right">{{ t.quantity|floatformat:2|intcomma }}</td>
                                     <td class="amount">{{ t.price|floatformat:2|intcomma }}</td>
                                     <td class="amount">{{ t.total_amount|floatformat:2|intcomma }}</td>
@@ -267,6 +318,7 @@
                                 <th>Sana</th>
                                 <th class="gap-right-lg">Summasi</th>
                                 <th>Izoh</th>
+                                <th>Mijoz</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -276,6 +328,7 @@
                                     <td>{{ p.date|date:"d.m.Y" }}</td>
                                     <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
                                     <td>{{ p.note|default:"-" }}</td>
+                                    <td>{{ p.client }}</td>
                                     <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
                                 </tr>
                             {% endfor %}
@@ -286,4 +339,81 @@
                 {% endif %}
             </div>
         </section>
+{% endblock %}
+
+{% block page_scripts %}
+    <script>
+        (function () {
+            const preset = document.getElementById("date_preset");
+            const start = document.getElementById("start_date");
+            const end = document.getElementById("end_date");
+            const clearBtn = document.getElementById("clear_filters");
+            const form = preset ? preset.form : null;
+
+            if (preset && form) {
+                function formatDate(d) {
+                    const m = String(d.getMonth() + 1).padStart(2, "0");
+                    const day = String(d.getDate()).padStart(2, "0");
+                    return `${d.getFullYear()}-${m}-${day}`;
+                }
+
+                preset.addEventListener("change", function () {
+                    if (!preset.value) {
+                        start.value = "";
+                        end.value = "";
+                        form.submit();
+                        return;
+                    }
+
+                    const today = new Date();
+                    const endDate = new Date(today);
+                    let startDate = new Date(today);
+
+                    if (preset.value === "yesterday") {
+                        startDate.setDate(startDate.getDate() - 1);
+                        endDate.setDate(endDate.getDate() - 1);
+                    } else if (preset.value === "week") {
+                        const day = (today.getDay() + 6) % 7;
+                        startDate.setDate(today.getDate() - day);
+                    } else if (preset.value === "month") {
+                        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    }
+
+                    start.value = formatDate(startDate);
+                    end.value = formatDate(endDate);
+                    form.submit();
+                });
+            }
+
+            if (start && end && form) {
+                function autoSetRange() {
+                    if (start.value && !end.value) {
+                        end.value = start.value;
+                    }
+                    if (end.value && !start.value) {
+                        start.value = end.value;
+                    }
+                }
+                start.addEventListener("change", function () {
+                    preset.value = "";
+                    autoSetRange();
+                    form.submit();
+                });
+                end.addEventListener("change", function () {
+                    preset.value = "";
+                    autoSetRange();
+                    form.submit();
+                });
+            }
+
+            if (clearBtn && form) {
+                clearBtn.addEventListener("click", function () {
+                    preset.value = "";
+                    start.value = "";
+                    end.value = "";
+                    form.submit();
+                });
+            }
+        })();
+    </script>
 {% endblock %}
