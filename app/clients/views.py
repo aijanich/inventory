@@ -88,8 +88,8 @@ def client_dashboard(request):
     balance = total_products - total_payments
 
     context = {
-        "transactions": transactions.order_by("-date")[:10],
-        "payments": payments.order_by("-date")[:10],
+        "transactions": transactions.order_by("-id")[:10],
+        "payments": payments.order_by("-id")[:10],
         "total_products": total_products,
         "total_payments": total_payments,
         "balance": balance,
@@ -120,7 +120,7 @@ def dashboard_products(request):
     if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
         return redirect("login")
 
-    products = Product.objects.order_by("-created_at")
+    products = Product.objects.order_by("-id")
     paginator = Paginator(products, 20)
     page_obj = paginator.get_page(request.GET.get("page"))
 
@@ -137,7 +137,7 @@ def dashboard_colors(request):
     if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
         return redirect("login")
 
-    colors = Color.objects.order_by("-created_at")
+    colors = Color.objects.order_by("-id")
     paginator = Paginator(colors, 20)
     page_obj = paginator.get_page(request.GET.get("page"))
 
@@ -198,7 +198,7 @@ def dashboard_payments(request):
     if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
         return redirect("login")
 
-    payments = Payment.objects.select_related("client", "client__user").order_by("-date")
+    payments = Payment.objects.select_related("client", "client__user").order_by("-id")
     if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
         payments = payments.filter(client__user=request.user)
     paginator = Paginator(payments, 20)
@@ -323,7 +323,7 @@ def export_transactions_csv(request):
             start = today.replace(day=1)
             return queryset.filter(date__range=(start, today))
         return queryset
-    transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-date")
+    transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-id")
     if is_admin and selected_client_id:
         transactions = transactions.filter(client_id=selected_client_id)
     elif not is_admin:
@@ -387,7 +387,7 @@ def export_transactions_pdf(request):
             start = today.replace(day=1)
             return queryset.filter(date__range=(start, today))
         return queryset
-    transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-date")
+    transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-id")
     if is_admin and selected_client_id:
         transactions = transactions.filter(client_id=selected_client_id)
     elif not is_admin:
