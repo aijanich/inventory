@@ -179,7 +179,7 @@ def dashboard_color_create(request):
         raise PermissionDenied()
 
     if request.method == "POST":
-        form = ColorForm(request.POST)
+        form = ColorForm(request.POST, request.FILES)
 
         if form.is_valid():
             form.save()
@@ -270,7 +270,7 @@ def dashboard_color_edit(request, pk):
     color = get_object_or_404(Color, pk=pk)
 
     if request.method == "POST":
-        form = ColorForm(request.POST, instance=color)
+        form = ColorForm(request.POST, request.FILES, instance=color)
 
         if form.is_valid():
             form.save()

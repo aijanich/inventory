@@ -21,6 +21,45 @@
         font-size: 12px;
     }
 
+    .thumb {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+    }
+
+    .thumb-wrap {
+        position: relative;
+        display: inline-block;
+    }
+
+    .thumb-wrap:hover .thumb {
+        transform: scale(4);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+        z-index: 2;
+    }
+
+    .thumb-wrap:hover {
+        z-index: 2;
+    }
+
+    .colors-table th,
+    .colors-table td {
+        padding-right: 6px;
+    }
+
+    .colors-table th:last-child,
+    .colors-table td:last-child {
+        padding-right: 0;
+    }
+
+    .colors-table td.action {
+        white-space: nowrap;
+        text-align: right;
+    }
+
 {% endblock %}
 
 {% block page_title %}Ranglar{% endblock %}
@@ -39,28 +78,42 @@
         </div>
         {% if colors %}
             <div class="table-wrap">
-                <table>
+                <table class="colors-table">
                 <thead>
                     <tr>
+
                         <th>Nomi</th>
                         <th>Kod</th>
                         <th>Izoh</th>
+                        <th>Rasm</th>
                         {% if request.user.is_staff or request.user.role == "admin" %}
                             <th></th>
                         {% endif %}
+
                     </tr>
                 </thead>
                 <tbody>
                     {% for c in colors %}
                         <tr>
+
                             <td>{{ c.name }}</td>
                             <td>{{ c.code }}</td>
                             <td>{{ c.comment|default:"-" }}</td>
+                            <td>
+                                {% if c.image %}
+                                    <span class="thumb-wrap">
+                                    <img class="thumb" src="{{ c.image.url }}" alt="{{ c.name }}">
+                                    </span>
+                                  {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                             {% if request.user.is_staff or request.user.role == "admin" %}
-                                <td class="amount">
+                                <td class="action">
                                     <a href="/dashboard/colors/{{ c.id }}/edit/">Tahrirlash</a>
                                 </td>
                             {% endif %}
+
                         </tr>
                     {% endfor %}
                 </tbody>

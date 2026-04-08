@@ -84,7 +84,7 @@
     <section class="form-card">
         <h2>Yangi rang</h2>
         <p>Rang ma'lumotlarini kiriting.</p>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
             <div class="actions">

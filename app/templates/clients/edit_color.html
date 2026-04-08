@@ -69,6 +69,31 @@
         margin-top: 4px;
     }
 
+    .preview {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        margin: 12px 0 6px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px dashed #d1d5db;
+    }
+
+    .preview img {
+        width: 120px;
+        height: 120px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+    }
+
+    .preview .meta {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
     @media (max-width: 520px) {
         .actions {
             grid-template-columns: 1fr;
@@ -84,9 +109,15 @@
     <section class="form-card">
         <h2>Rangni tahrirlash</h2>
         <p>{{ color.name }} ma'lumotlarini yangilang va saqlang.</p>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
+            {% if color.image %}
+                <div class="preview">
+                    <img src="{{ color.image.url }}" alt="{{ color.name }}">
+                    <div class="meta">Joriy rasm ko‘rinishi</div>
+                </div>
+            {% endif %}
             <div class="actions">
                 <button class="btn" type="submit">Saqlash</button>
                 <a class="btn ghost" href="/dashboard/colors/">Orqaga</a>
