@@ -56,7 +56,6 @@
 {% endblock %}
 
 {% block page_title %}Mahsulotlar{% endblock %}
-{% block page_subtitle %}Mahsulotlar ro‘yxati va tafsilotlari.{% endblock %}
 {% block menu_products_active %}active{% endblock %}
 
 {% block content %}
@@ -71,7 +70,8 @@
             </div>
         </div>
         {% if products %}
-            <table>
+            <div class="table-wrap">
+                <table>
                 <thead>
                     <tr>
                         <th>Nomi</th>
@@ -108,7 +108,8 @@
                         </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+                </table>
+            </div>
         {% else %}
             <p class="empty">Hozircha mahsulotlar yo‘q.</p>
         {% endif %}

@@ -155,19 +155,21 @@
     }
 
     .filter select {
-        padding: 6px 10px;
-        border-radius: 10px;
+        padding: 4px 8px;
+        border-radius: 8px;
         border: 1px solid #d1d5db;
-        font-size: 13px;
+        font-size: 12px;
         background: #fff;
     }
 
-    .filter input[type="date"] {
-        padding: 6px 10px;
-        border-radius: 10px;
+    .filter input[type="date"],
+    .filter input[type="text"] {
+        padding: 4px 8px;
+        border-radius: 8px;
         border: 1px solid #d1d5db;
-        font-size: 13px;
+        font-size: 12px;
         background: #fff;
+        width: 110px;
     }
 
     .filter .btn {
@@ -190,7 +192,6 @@
 {% endblock %}
 
 {% block page_title %}Hisobingiz{% endblock %}
-{% block page_subtitle %}So‘nggi holat va harakatlar shu yerda ko‘rsatiladi.{% endblock %}
 {% block header_meta %}
 {% endblock %}
 
@@ -216,15 +217,16 @@
                     <option value="week"{% if date_preset == "week" %} selected{% endif %}>Shu hafta</option>
                     <option value="month"{% if date_preset == "month" %} selected{% endif %}>Shu oy</option>
                 </select>
-                <label for="start_date">Boshlanish</label>
+                <label for="start_date">Start</label>
                 <input id="start_date" name="start_date" type="date" value="{{ start_date }}">
-                <label for="end_date">Tugash</label>
+                <label for="end_date">End</label>
                 <input id="end_date" name="end_date" type="date" value="{{ end_date }}">
                 <button class="btn small icon-btn" type="button" id="clear_filters" title="Tozalash">✕</button>
-                <button class="btn small" type="submit">Filtrlash</button>
+
 
             </form>
             <div class="filter-actions">
+                <button class="btn small" type="submit">Filtrlash</button>
                 <a class="btn small" href="{% url 'dashboard_transactions_export_csv' %}{% if export_query %}?{{ export_query }}{% endif %}">
                     Export Excel
                 </a>
@@ -257,87 +259,169 @@
         </section>
 
         <section class="grid">
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>Oxirgi tovarlar</h2>
-                    <div class="panel-actions">
-                        <span class="count">{{ transactions|length|intcomma }} ta</span>
-                        {% if request.user.is_staff or request.user.role == "admin" %}
+            {% if request.user.is_staff or request.user.role == "admin" %}
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>Oxirgi tovarlar</h2>
+                        <div class="panel-actions">
+                            <span class="count">{{ transactions|length|intcomma }} ta</span>
                             <a class="btn small" href="/transactions/transaction/new/">+ Yangi</a>
-                        {% endif %}
+                        </div>
                     </div>
-                </div>
-                {% if transactions %}
-                    <table class="transactions-table">
-                        <thead>
-                            <tr>
-                                <th>Sana</th>
-                                <th class="gap-right-sm">Tovar</th>
-                                <th>Mijoz</th>
-                                <th class="gap-right-xs">Rang</th>
-                                <th class="gap-right">Soni</th>
-                                <th>Narxi</th>
-                                <th>Summasi</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for t in transactions %}
+                    {% if transactions %}
+                        <div class="table-wrap">
+                            <table class="transactions-table">
+                            <thead>
                                 <tr>
-                                    <td>{{ t.date|date:"d.m.Y" }}</td>
-                                    <td class="gap-right-sm">{{ t.product.name }}</td>
-                                    <td>{{ t.client }}</td>
-                                    <td class="gap-right-xs">{{ t.color|default:"-" }}</td>
-                                    <td class="amount gap-right">{{ t.quantity|floatformat:2|intcomma }}</td>
-                                    <td class="amount">{{ t.price|floatformat:2|intcomma }}</td>
-                                    <td class="amount">{{ t.total_amount|floatformat:2|intcomma }}</td>
-                                    <td class="action"><a href="{% url 'edit_transaction' t.id %}">Tahrirlash</a></td>
+                                    <th>Sana</th>
+                                    <th class="gap-right-sm">Tovar</th>
+                                    <th>Mijoz</th>
+                                    <th class="gap-right-xs">Rang</th>
+                                    <th class="gap-right">Soni</th>
+                                    <th>Narxi</th>
+                                    <th>Summasi</th>
+                                    <th></th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p class="empty">Hozircha tovarlar kiritilmagan.</p>
-                {% endif %}
-            </div>
+                            </thead>
+                            <tbody>
+                                {% for t in transactions %}
+                                    <tr>
+                                        <td>{{ t.date|date:"d.m.Y" }}</td>
+                                        <td class="gap-right-sm">{{ t.product.name }}</td>
+                                        <td>{{ t.client }}</td>
+                                        <td class="gap-right-xs">{{ t.color|default:"-" }}</td>
+                                        <td class="amount gap-right">{{ t.quantity|floatformat:2|intcomma }}</td>
+                                        <td class="amount">{{ t.price|floatformat:2|intcomma }}</td>
+                                        <td class="amount">{{ t.total_amount|floatformat:2|intcomma }}</td>
+                                        <td class="action"><a href="{% url 'edit_transaction' t.id %}">Tahrirlash</a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="empty">Hozircha tovarlar kiritilmagan.</p>
+                    {% endif %}
+                </div>
 
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>Oxirgi to‘lovlar</h2>
-                    <div class="panel-actions">
-                        <span class="count">{{ payments|length|intcomma }} ta</span>
-                        {% if request.user.role == "client" %}
-                            <a class="btn small" href="/dashboard/payments/new/">+ Yangi</a>
-                        {% endif %}
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>Oxirgi to‘lovlar</h2>
+                        <div class="panel-actions">
+                            <span class="count">{{ payments|length|intcomma }} ta</span>
+                        </div>
                     </div>
-                </div>
-                {% if payments %}
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Sana</th>
-                                <th class="gap-right-lg">Summasi</th>
-                                <th>Izoh</th>
-                                <th>Mijoz</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for p in payments %}
+                    {% if payments %}
+                        <div class="table-wrap">
+                            <table>
+                            <thead>
                                 <tr>
-                                    <td>{{ p.date|date:"d.m.Y" }}</td>
-                                    <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
-                                    <td>{{ p.note|default:"-" }}</td>
-                                    <td>{{ p.client }}</td>
-                                    <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
+                                    <th>Sana</th>
+                                    <th class="gap-right-lg">Summasi</th>
+                                    <th>Izoh</th>
+                                    <th>Mijoz</th>
+                                    <th></th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p class="empty">Hozircha to‘lovlar yo‘q.</p>
-                {% endif %}
-            </div>
+                            </thead>
+                            <tbody>
+                                {% for p in payments %}
+                                    <tr>
+                                        <td>{{ p.date|date:"d.m.Y" }}</td>
+                                        <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
+                                        <td>{{ p.note|default:"-" }}</td>
+                                        <td>{{ p.client }}</td>
+                                        <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="empty">Hozircha to‘lovlar yo‘q.</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>Oxirgi to‘lovlar</h2>
+                        <div class="panel-actions">
+                            <span class="count">{{ payments|length|intcomma }} ta</span>
+                            <a class="btn small" href="/dashboard/payments/new/">+ Yangi</a>
+                        </div>
+                    </div>
+                    {% if payments %}
+                        <div class="table-wrap">
+                            <table>
+                            <thead>
+                                <tr>
+                                    <th>Sana</th>
+                                    <th class="gap-right-lg">Summasi</th>
+                                    <th>Izoh</th>
+                                    <th>Mijoz</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in payments %}
+                                    <tr>
+                                        <td>{{ p.date|date:"d.m.Y" }}</td>
+                                        <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
+                                        <td>{{ p.note|default:"-" }}</td>
+                                        <td>{{ p.client }}</td>
+                                        <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="empty">Hozircha to‘lovlar yo‘q.</p>
+                    {% endif %}
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>Oxirgi tovarlar</h2>
+                        <div class="panel-actions">
+                            <span class="count">{{ transactions|length|intcomma }} ta</span>
+                        </div>
+                    </div>
+                    {% if transactions %}
+                        <div class="table-wrap">
+                            <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Sana</th>
+                                    <th class="gap-right-sm">Tovar</th>
+                                    <th>Mijoz</th>
+                                    <th class="gap-right-xs">Rang</th>
+                                    <th class="gap-right">Soni</th>
+                                    <th>Narxi</th>
+                                    <th>Summasi</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in transactions %}
+                                    <tr>
+                                        <td>{{ t.date|date:"d.m.Y" }}</td>
+                                        <td class="gap-right-sm">{{ t.product.name }}</td>
+                                        <td>{{ t.client }}</td>
+                                        <td class="gap-right-xs">{{ t.color|default:"-" }}</td>
+                                        <td class="amount gap-right">{{ t.quantity|floatformat:2|intcomma }}</td>
+                                        <td class="amount">{{ t.price|floatformat:2|intcomma }}</td>
+                                        <td class="amount">{{ t.total_amount|floatformat:2|intcomma }}</td>
+                                        <td class="action"><a href="{% url 'edit_transaction' t.id %}">Tahrirlash</a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="empty">Hozircha tovarlar kiritilmagan.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
         </section>
 {% endblock %}
 

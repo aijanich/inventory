@@ -57,7 +57,7 @@
 
         .top h1 {
             margin: 0 0 6px;
-            font-size: 30px;
+            font-size: 24px;
             letter-spacing: 0.2px;
         }
 
@@ -208,10 +208,25 @@
             font-size: 13px;
         }
 
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-wrap table {
+            min-width: 720px;
+        }
+
         @media (max-width: 720px) {
             .top {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+
+            .top-actions {
+                width: 100%;
+                justify-content: space-between;
             }
 
             .btn.ghost {
@@ -225,6 +240,18 @@
             .menu-link {
                 flex: 1 1 auto;
                 justify-content: center;
+            }
+
+            .page {
+                padding: 20px 14px 40px;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            th, td {
+                font-size: 13px;
             }
 
             .pagination {
@@ -256,6 +283,10 @@
                 <h1>{% block page_title %}{% endblock %}</h1>
                 <p class="sub">{% block page_subtitle %}{% endblock %}</p>
                 {% block header_meta %}{% endblock %}
+                <div class="top-actions">
+                <span class="user-pill">Kirish: {{ request.user.username }}</span>
+                <a class="btn small" href="{% url 'logout' %}">Chiqish</a>
+            </div>
                 <nav class="menu">
                     <a class="menu-link {% block menu_dashboard_active %}{% endblock %}" href="/dashboard/">Dashboard</a>
                     <a class="menu-link {% block menu_products_active %}{% endblock %}" href="/dashboard/products/">Mahsulotlar</a>
@@ -263,10 +294,7 @@
                 </nav>
                 {% block header_after_menu %}{% endblock %}
             </div>
-            <div class="top-actions">
-                <span class="user-pill">Kirish: {{ request.user.username }}</span>
-                <a class="btn ghost" href="{% url 'logout' %}">Chiqish</a>
-            </div>
+
         </header>
 
         {% block content %}{% endblock %}

@@ -42,7 +42,8 @@
             </div>
         </div>
         {% if payments %}
-            <table>
+            <div class="table-wrap">
+                <table>
                 <thead>
                     <tr>
                         <th>Mijoz</th>
@@ -63,7 +64,8 @@
                         </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+                </table>
+            </div>
         {% else %}
             <p class="empty">Hozircha to‘lovlar yo‘q.</p>
         {% endif %}

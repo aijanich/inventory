@@ -24,7 +24,6 @@
 {% endblock %}
 
 {% block page_title %}Ranglar{% endblock %}
-{% block page_subtitle %}Ranglar spravochnigi.{% endblock %}
 {% block menu_colors_active %}active{% endblock %}
 
 {% block content %}
@@ -39,7 +38,8 @@
             </div>
         </div>
         {% if colors %}
-            <table>
+            <div class="table-wrap">
+                <table>
                 <thead>
                     <tr>
                         <th>Nomi</th>
@@ -64,7 +64,8 @@
                         </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+                </table>
+            </div>
         {% else %}
             <p class="empty">Hozircha ranglar yo‘q.</p>
         {% endif %}
