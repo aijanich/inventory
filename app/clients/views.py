@@ -75,6 +75,7 @@ def client_dashboard(request):
         payments = Payment.objects.filter(client=profile).select_related("client")
 
     transactions = apply_date_filter(transactions)
+    payments = apply_date_filter(payments)
 
     total_products = transactions.aggregate(
         total=Sum("total_amount")

@@ -141,6 +141,10 @@
         text-align: right;
     }
 
+    .payments-table th {
+        text-align: center;
+    }
+
     .filter {
         margin-top: 10px;
         display: inline-flex;
@@ -196,10 +200,10 @@
 {% endblock %}
 
 {% block header_after_menu %}
-    {% if clients %}
-        <div class="filter">
-            <form method="get">
-                <label for="client">User </label>
+    <div class="filter">
+        <form method="get">
+            {% if clients %}
+                <label for="client">Foydalanuvchi</label>
                 <select id="client" name="client" onchange="this.form.submit()">
                     <option value="">Hammasi</option>
                     {% for c in clients %}
@@ -208,34 +212,32 @@
                         </option>
                     {% endfor %}
                 </select>
+            {% endif %}
 
-                <label for="date_preset">Sana</label>
-                <select id="date_preset" name="date_preset">
-                    <option value="">Hammasi</option>
-                    <option value="today"{% if date_preset == "today" %} selected{% endif %}>Bugun</option>
-                    <option value="yesterday"{% if date_preset == "yesterday" %} selected{% endif %}>Kecha</option>
-                    <option value="week"{% if date_preset == "week" %} selected{% endif %}>Shu hafta</option>
-                    <option value="month"{% if date_preset == "month" %} selected{% endif %}>Shu oy</option>
-                </select>
-                <label for="start_date">Start</label>
-                <input id="start_date" name="start_date" type="date" value="{{ start_date }}">
-                <label for="end_date">End</label>
-                <input id="end_date" name="end_date" type="date" value="{{ end_date }}">
-                <button class="btn small icon-btn" type="button" id="clear_filters" title="Tozalash">✕</button>
-
-
-            </form>
-            <div class="filter-actions">
-                <button class="btn small" type="submit">Filtrlash</button>
-                <a class="btn small" href="{% url 'dashboard_transactions_export_csv' %}{% if export_query %}?{{ export_query }}{% endif %}">
-                    Export Excel
-                </a>
-                <a class="btn small" href="{% url 'dashboard_transactions_export_pdf' %}{% if export_query %}?{{ export_query }}{% endif %}">
-                    Export PDF
-                </a>
-            </div>
+            <label for="date_preset">Sana</label>
+            <select id="date_preset" name="date_preset">
+                <option value="">Hammasi</option>
+                <option value="today"{% if date_preset == "today" %} selected{% endif %}>Bugun</option>
+                <option value="yesterday"{% if date_preset == "yesterday" %} selected{% endif %}>Kecha</option>
+                <option value="week"{% if date_preset == "week" %} selected{% endif %}>Shu hafta</option>
+                <option value="month"{% if date_preset == "month" %} selected{% endif %}>Shu oy</option>
+            </select>
+            <label for="start_date">Start</label>
+            <input id="start_date" name="start_date" type="text" placeholder="dd.mm.yy" value="{{ start_date }}">
+            <label for="end_date">End</label>
+            <input id="end_date" name="end_date" type="text" placeholder="dd.mm.yy" value="{{ end_date }}">
+            <button class="btn small icon-btn" type="button" id="clear_filters" title="Tozalash">✕</button>
+            <button class="btn small" type="submit">Filtrlash</button>
+        </form>
+        <div class="filter-actions">
+            <a class="btn small" href="{% url 'dashboard_transactions_export_csv' %}{% if export_query %}?{{ export_query }}{% endif %}">
+                Export Excel
+            </a>
+            <a class="btn small" href="{% url 'dashboard_transactions_export_pdf' %}{% if export_query %}?{{ export_query }}{% endif %}">
+                Export PDF
+            </a>
         </div>
-    {% endif %}
+    </div>
 {% endblock %}
 {% block menu_dashboard_active %}active{% endblock %}
 
@@ -275,7 +277,9 @@
                                 <tr>
                                     <th>Sana</th>
                                     <th class="gap-right-sm">Tovar</th>
-                                    <th>Mijoz</th>
+                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                        <th>Mijoz</th>
+                                    {% endif %}
                                     <th class="gap-right-xs">Rang</th>
                                     <th class="gap-right">Soni</th>
                                     <th>Narxi</th>
@@ -288,7 +292,9 @@
                                     <tr>
                                         <td>{{ t.date|date:"d.m.Y" }}</td>
                                         <td class="gap-right-sm">{{ t.product.name }}</td>
+                                    {% if request.user.is_staff or request.user.role == "admin" %}
                                         <td>{{ t.client }}</td>
+                                    {% endif %}
                                         <td class="gap-right-xs">{{ t.color|default:"-" }}</td>
                                         <td class="amount gap-right">{{ t.quantity|floatformat:2|intcomma }}</td>
                                         <td class="amount">{{ t.price|floatformat:2|intcomma }}</td>
@@ -313,13 +319,15 @@
                     </div>
                     {% if payments %}
                         <div class="table-wrap">
-                            <table>
+                        <table class="payments-table">
                             <thead>
                                 <tr>
                                     <th>Sana</th>
                                     <th class="gap-right-lg">Summasi</th>
                                     <th>Izoh</th>
-                                    <th>Mijoz</th>
+                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                        <th>Mijoz</th>
+                                    {% endif %}
                                     <th></th>
                                 </tr>
                             </thead>
@@ -329,7 +337,9 @@
                                         <td>{{ p.date|date:"d.m.Y" }}</td>
                                         <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
                                         <td>{{ p.note|default:"-" }}</td>
+                                    {% if request.user.is_staff or request.user.role == "admin" %}
                                         <td>{{ p.client }}</td>
+                                    {% endif %}
                                         <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
                                     </tr>
                                 {% endfor %}
@@ -351,13 +361,15 @@
                     </div>
                     {% if payments %}
                         <div class="table-wrap">
-                            <table>
+                        <table class="payments-table">
                             <thead>
                                 <tr>
                                     <th>Sana</th>
                                     <th class="gap-right-lg">Summasi</th>
                                     <th>Izoh</th>
-                                    <th>Mijoz</th>
+                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                        <th>Mijoz</th>
+                                    {% endif %}
                                     <th></th>
                                 </tr>
                             </thead>
@@ -367,7 +379,9 @@
                                         <td>{{ p.date|date:"d.m.Y" }}</td>
                                         <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
                                         <td>{{ p.note|default:"-" }}</td>
-                                        <td>{{ p.client }}</td>
+                                        {% if request.user.is_staff or request.user.role == "admin" %}
+                                            <td>{{ p.client }}</td>
+                                        {% endif %}
                                         <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
                                     </tr>
                                 {% endfor %}
@@ -393,7 +407,9 @@
                                 <tr>
                                     <th>Sana</th>
                                     <th class="gap-right-sm">Tovar</th>
-                                    <th>Mijoz</th>
+                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                        <th>Mijoz</th>
+                                    {% endif %}
                                     <th class="gap-right-xs">Rang</th>
                                     <th class="gap-right">Soni</th>
                                     <th>Narxi</th>
@@ -406,7 +422,9 @@
                                     <tr>
                                         <td>{{ t.date|date:"d.m.Y" }}</td>
                                         <td class="gap-right-sm">{{ t.product.name }}</td>
-                                        <td>{{ t.client }}</td>
+                                        {% if request.user.is_staff or request.user.role == "admin" %}
+                                            <td>{{ t.client }}</td>
+                                        {% endif %}
                                         <td class="gap-right-xs">{{ t.color|default:"-" }}</td>
                                         <td class="amount gap-right">{{ t.quantity|floatformat:2|intcomma }}</td>
                                         <td class="amount">{{ t.price|floatformat:2|intcomma }}</td>
