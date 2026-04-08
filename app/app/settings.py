@@ -29,6 +29,11 @@ DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://msdn.uz",
+    "http://msdn.uz",
+]
+
 
 # Application definition
 
