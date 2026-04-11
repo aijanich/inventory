@@ -101,4 +101,20 @@
         </form>
     </section>
     <script src="{% static 'admin/js/transaction_calc.js' %}"></script>
+    <script>
+        (function () {
+            const clientField = document.getElementById("id_client");
+            if (!clientField) return;
+            clientField.addEventListener("change", function () {
+                const value = clientField.value;
+                const url = new URL(window.location.href);
+                if (value) {
+                    url.searchParams.set("client", value);
+                } else {
+                    url.searchParams.delete("client");
+                }
+                window.location.href = url.toString();
+            });
+        })();
+    </script>
 {% endblock %}

@@ -340,7 +340,11 @@
                                     {% if request.user.is_staff or request.user.role == "admin" %}
                                         <td>{{ p.client }}</td>
                                     {% endif %}
-                                        <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
+                                        {% if request.user.role == "client" %}
+                                            <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
+                                        {% else %}
+                                            <td></td>
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -382,7 +386,11 @@
                                         {% if request.user.is_staff or request.user.role == "admin" %}
                                             <td>{{ p.client }}</td>
                                         {% endif %}
-                                        <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
+                                        {% if request.user.role == "client" %}
+                                            <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
+                                        {% else %}
+                                            <td></td>
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
                             </tbody>

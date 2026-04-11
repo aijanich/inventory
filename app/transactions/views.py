@@ -11,15 +11,16 @@ def create_transaction(request):
     if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
         raise PermissionDenied()
 
+    client_id = request.GET.get("client") if request.method != "POST" else request.POST.get("client")
     if request.method == "POST":
-        form = ProductTransactionForm(request.POST)
+        form = ProductTransactionForm(request.POST, client=client_id)
 
         if form.is_valid():
             form.save()
             return redirect("client_dashboard")
 
     else:
-        form = ProductTransactionForm()
+        form = ProductTransactionForm(initial={"client": client_id} if client_id else None, client=client_id)
 
     return render(request, "transactions/create_transaction.html", {"form": form})
 
@@ -54,14 +55,15 @@ def edit_transaction(request, pk):
         transaction = get_object_or_404(ProductTransaction, pk=pk, client__user=request.user)
 
     if request.method == "POST":
-        form = ProductTransactionForm(request.POST, instance=transaction)
+        client_id = request.POST.get("client") or transaction.client_id
+        form = ProductTransactionForm(request.POST, instance=transaction, client=client_id)
 
         if form.is_valid():
             form.save()
             return redirect("client_dashboard")
 
     else:
-        form = ProductTransactionForm(instance=transaction)
+        form = ProductTransactionForm(instance=transaction, client=transaction.client_id)
 
     return render(request, "transactions/edit_transaction.html", {"form": form})
 

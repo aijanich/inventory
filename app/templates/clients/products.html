@@ -74,6 +74,7 @@
                 <table>
                 <thead>
                     <tr>
+                        <th>Mijoz</th>
                         <th>Nomi</th>
                         <th>Kod</th>
                         <th class="amount">Narxi</th>
@@ -87,6 +88,7 @@
                 <tbody>
                     {% for p in products %}
                         <tr>
+                            <td>{{ p.client|default:"-" }}</td>
                             <td>{{ p.name }}</td>
                             <td>{{ p.code }}</td>
                             <td class="amount">{{ p.price|floatformat:2|intcomma }}</td>

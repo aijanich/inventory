@@ -2,6 +2,13 @@ from django.db import models
 
 
 class Product(models.Model):
+    client = models.ForeignKey(
+        "clients.ClientProfile",
+        on_delete=models.CASCADE,
+        related_name="products",
+        blank=True,
+        null=True,
+    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, unique=True)
 

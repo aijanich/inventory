@@ -120,7 +120,9 @@ def dashboard_products(request):
     if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
         return redirect("login")
 
-    products = Product.objects.order_by("-id")
+    products = Product.objects.select_related("client", "client__user").order_by("-id")
+    if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+        products = products.filter(client=request.user.profile)
     paginator = Paginator(products, 20)
     page_obj = paginator.get_page(request.GET.get("page"))
 
