@@ -291,6 +291,9 @@
                     <a class="menu-link {% block menu_dashboard_active %}{% endblock %}" href="/dashboard/">Dashboard</a>
                     <a class="menu-link {% block menu_products_active %}{% endblock %}" href="/dashboard/products/">Mahsulotlar</a>
                     <a class="menu-link {% block menu_colors_active %}{% endblock %}" href="/dashboard/colors/">Ranglar</a>
+                    {% if request.user.is_staff or request.user.role == "admin" %}
+                        <a class="menu-link {% block menu_users_active %}{% endblock %}" href="/dashboard/users/">Foydalanuvchilar</a>
+                    {% endif %}
                 </nav>
                 {% block header_after_menu %}{% endblock %}
             </div>

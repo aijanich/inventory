@@ -55,6 +55,9 @@ def client_dashboard(request):
         if date_preset == "month":
             start = today.replace(day=1)
             return queryset.filter(date__range=(start, today))
+        if date_preset == "year":
+            start = today.replace(month=1, day=1)
+            return queryset.filter(date__range=(start, today))
         return queryset
 
     if is_admin:
@@ -324,6 +327,9 @@ def export_transactions_csv(request):
         if date_preset == "month":
             start = today.replace(day=1)
             return queryset.filter(date__range=(start, today))
+        if date_preset == "year":
+            start = today.replace(month=1, day=1)
+            return queryset.filter(date__range=(start, today))
         return queryset
     transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-id")
     if is_admin and selected_client_id:
@@ -387,6 +393,9 @@ def export_transactions_pdf(request):
             return queryset.filter(date__range=(start, today))
         if date_preset == "month":
             start = today.replace(day=1)
+            return queryset.filter(date__range=(start, today))
+        if date_preset == "year":
+            start = today.replace(month=1, day=1)
             return queryset.filter(date__range=(start, today))
         return queryset
     transactions = ProductTransaction.objects.select_related("client", "product", "color").order_by("-id")
