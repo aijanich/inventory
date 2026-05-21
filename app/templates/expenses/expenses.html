@@ -1,0 +1,73 @@
+{% extends "clients/base_dashboard.html" %}
+
+{% block title %}Expenses{% endblock %}
+{% block page_title %}Xarajatlar{% endblock %}
+{% block page_subtitle %}Faqat admin uchun{% endblock %}
+{% block menu_expenses_active %}active{% endblock %}
+
+{% block header_after_menu %}
+    <div style="margin-top: 14px;">
+        <a class="btn" href="{% url 'dashboard_expense_create' %}">+ Yangi xarajat</a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="panel-header">
+            <h2>Ro'yxat</h2>
+            <span class="count">Jami: {{ total|floatformat:2 }}</span>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sana</th>
+                        <th>Izoh</th>
+                        <th>Kim kiritdi</th>
+                        <th class="amount">Summa</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in expenses %}
+                        <tr>
+                            <td>{{ e.date }}</td>
+                            <td>{{ e.description|default:"-" }}</td>
+                            <td>{{ e.created_by.username|default:"-" }}</td>
+                            <td class="amount">{{ e.amount|floatformat:2 }}</td>
+                            <td class="amount">
+                                <a class="btn ghost" href="{% url 'dashboard_expense_edit' e.id %}">Tahrirlash</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                <p class="empty">Hozircha xarajatlar yo'q.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj %}
+            <div class="pagination">
+                <div>
+                    {% if page_obj.has_previous %}
+                        <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Oldingi</a>
+                    {% endif %}
+                </div>
+                <div class="page-info">
+                    Sahifa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </div>
+                <div>
+                    {% if page_obj.has_next %}
+                        <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Keyingi</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
+

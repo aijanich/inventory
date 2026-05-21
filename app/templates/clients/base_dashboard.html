@@ -293,6 +293,7 @@
                     <a class="menu-link {% block menu_colors_active %}{% endblock %}" href="/dashboard/colors/">Ranglar</a>
                     {% if request.user.is_staff or request.user.role == "admin" %}
                         <a class="menu-link {% block menu_users_active %}{% endblock %}" href="/dashboard/users/">Foydalanuvchilar</a>
+                        <a class="menu-link {% block menu_expenses_active %}{% endblock %}" href="/dashboard/expenses/">Xarajatlar</a>
                     {% endif %}
                 </nav>
                 {% block header_after_menu %}{% endblock %}

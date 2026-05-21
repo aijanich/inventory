@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'core',
     'products',
     'colors.apps.ColorsConfig',
+    "expenses",
     'rest_framework',
 ]
 
