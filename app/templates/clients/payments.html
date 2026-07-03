@@ -31,7 +31,7 @@
             <h2>Ro‘yxat</h2>
             <div class="panel-actions">
                 <span class="count">{{ page_obj.paginator.count|intcomma }} ta</span>
-                {% if request.user.role == "client" %}
+                {% if effective_user.role == "client" %}
                     <a class="btn small" href="/dashboard/payments/new/">+ Yangi</a>
                 {% endif %}
             </div>

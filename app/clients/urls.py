@@ -9,12 +9,16 @@ from .views import (
     dashboard_colors,
     dashboard_color_create,
     dashboard_color_edit,
+    admin_user_select,
+    admin_user_clear,
     export_transactions_csv,
     export_transactions_pdf,
 )
 
 urlpatterns = [
     path("dashboard/", client_dashboard, name="client_dashboard"),
+    path("select-user/", admin_user_select, name="admin_user_select"),
+    path("select-user/clear/", admin_user_clear, name="admin_user_clear"),
     path("dashboard/products/", dashboard_products, name="dashboard_products"),
     path("dashboard/products/new/", dashboard_product_create, name="dashboard_product_create"),
     path("dashboard/products/<int:pk>/edit/", dashboard_product_edit, name="dashboard_product_edit"),

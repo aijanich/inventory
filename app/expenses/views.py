@@ -4,19 +4,25 @@ from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
+from app.acting import get_effective_user, is_effective_admin, redirect_admin_to_user_choice
 from .forms import ExpenseForm
 from .models import Expense
 
 
 def _require_admin(request):
-    is_admin = request.user.is_staff or getattr(request.user, "role", "") == "admin"
-    if not is_admin:
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+    if not is_effective_admin(request):
         raise PermissionDenied()
+    return None
 
 
 @login_required
 def dashboard_expenses(request):
-    _require_admin(request)
+    redirect_response = _require_admin(request)
+    if redirect_response:
+        return redirect_response
 
     qs = Expense.objects.select_related("created_by").all()
     total = qs.aggregate(total=Sum("amount"))["total"] or 0
@@ -32,13 +38,15 @@ def dashboard_expenses(request):
 
 @login_required
 def dashboard_expense_create(request):
-    _require_admin(request)
+    redirect_response = _require_admin(request)
+    if redirect_response:
+        return redirect_response
 
     if request.method == "POST":
         form = ExpenseForm(request.POST)
         if form.is_valid():
             obj = form.save(commit=False)
-            obj.created_by = request.user
+            obj.created_by = get_effective_user(request)
             obj.save()
             return redirect("dashboard_expenses")
     else:
@@ -49,7 +57,9 @@ def dashboard_expense_create(request):
 
 @login_required
 def dashboard_expense_edit(request, pk: int):
-    _require_admin(request)
+    redirect_response = _require_admin(request)
+    if redirect_response:
+        return redirect_response
 
     obj = get_object_or_404(Expense, pk=pk)
     if request.method == "POST":
@@ -65,4 +75,3 @@ def dashboard_expense_edit(request, pk: int):
         "expenses/expense_form.html",
         {"form": form, "mode": "edit", "expense": obj},
     )
-

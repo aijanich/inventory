@@ -4,14 +4,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
+from .acting import admin_needs_user_choice
 
 
 def home_redirect(request):
     if request.user.is_authenticated:
-        is_admin = request.user.is_staff or getattr(request.user, "role", "") == "admin"
-        if is_admin:
-            return redirect("client_dashboard")
+        if admin_needs_user_choice(request):
+            return redirect("admin_user_select")
         if hasattr(request.user, "profile"):
+            return redirect("client_dashboard")
+        if request.user.is_staff or getattr(request.user, "role", "") == "admin":
             return redirect("client_dashboard")
         return redirect("login")
     return redirect("login")
@@ -26,6 +28,7 @@ urlpatterns = [
     path("", include("users.urls")),
     path("", include("expenses.urls")),
     path("", include("products.urls")),
+    path("", include("orders.urls")),
     path("transactions/", include("transactions.urls")),
 ]
 

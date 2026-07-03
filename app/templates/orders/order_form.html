@@ -1,0 +1,103 @@
+{% extends "clients/base_dashboard.html" %}
+
+{% block title %}Order{% endblock %}
+{% block menu_orders_active %}active{% endblock %}
+
+{% block page_title %}
+    {% if mode == "create" %}New order{% else %}Edit order{% endif %}
+{% endblock %}
+
+{% block page_style %}
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    .form-grid .full {
+        grid-column: 1 / -1;
+    }
+    label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        margin-bottom: 6px;
+    }
+    input, select, textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        outline: none;
+    }
+    textarea {
+        min-height: 96px;
+        resize: vertical;
+    }
+    .errors {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 14px;
+        font-size: 13px;
+    }
+    .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+    }
+    @media (max-width: 720px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        {% if form.errors %}
+            <div class="errors">
+                Please fix the form errors.
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div>
+                    <label for="{{ form.user.id_for_label }}">Foydalanuvchi</label>
+                    {{ form.user }}
+                    {{ form.user.errors }}
+                </div>
+                <div>
+                    <label for="{{ form.product.id_for_label }}">Tovar</label>
+                    {{ form.product }}
+                    {{ form.product.errors }}
+                </div>
+                <div>
+                    <label for="{{ form.color.id_for_label }}">Rangi</label>
+                    {{ form.color }}
+                    {{ form.color.errors }}
+                </div>
+                <div>
+                    <label for="{{ form.count.id_for_label }}">Soni</label>
+                    {{ form.count }}
+                    {{ form.count.errors }}
+                </div>
+                <div class="full">
+                    <label for="{{ form.sizes.id_for_label }}">O'lchamlari</label>
+                    {{ form.sizes }}
+                    {{ form.sizes.errors }}
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn" type="submit">Save</button>
+                <a class="btn ghost" href="{% url 'dashboard_orders' %}">Cancel</a>
+            </div>
+        </form>
+    </section>
+{% endblock %}

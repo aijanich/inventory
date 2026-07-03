@@ -15,13 +15,63 @@ from products.models import Product
 from colors.models import Color
 from products.forms import ProductForm
 from colors.forms import ColorForm
+from app.acting import (
+    ACTING_USER_SESSION_KEY,
+    get_effective_user,
+    is_effective_admin,
+    is_real_admin,
+    ordinary_users,
+    redirect_admin_to_user_choice,
+)
+
+
+def _has_dashboard_access(user):
+    return hasattr(user, "profile") or user.is_staff or getattr(user, "role", "") == "admin"
+
+
+def _effective_context(request):
+    effective_user = get_effective_user(request)
+    return effective_user, is_effective_admin(request)
+
+
+@login_required
+def admin_user_select(request):
+    if not is_real_admin(request.user):
+        return redirect("client_dashboard")
+
+    users = ordinary_users()
+    if request.method == "POST":
+        user_id = request.POST.get("user_id")
+        selected_user = users.filter(pk=user_id).first()
+        if selected_user:
+            request.session[ACTING_USER_SESSION_KEY] = selected_user.pk
+            return redirect("client_dashboard")
+        return render(
+            request,
+            "clients/select_user.html",
+            {"users": users, "error": "Iltimos, oddiy foydalanuvchini tanlang."},
+        )
+
+    return render(request, "clients/select_user.html", {"users": users})
+
+
+@login_required
+def admin_user_clear(request):
+    if is_real_admin(request.user):
+        request.session.pop(ACTING_USER_SESSION_KEY, None)
+        return redirect("admin_user_select")
+    return redirect("client_dashboard")
 
 
 @login_required
 def client_dashboard(request):
 
-    is_admin = request.user.is_staff or getattr(request.user, "role", "") == "admin"
-    if not hasattr(request.user, "profile") and not is_admin:
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not _has_dashboard_access(effective_user):
         return redirect("login")
 
     date_preset = request.GET.get("date_preset", "")
@@ -73,7 +123,7 @@ def client_dashboard(request):
             transactions = transactions.filter(client_id=selected_client_id)
             payments = payments.filter(client_id=selected_client_id)
     else:
-        profile = request.user.profile
+        profile = effective_user.profile
         transactions = ProductTransaction.objects.filter(client=profile).select_related("product", "color")
         payments = Payment.objects.filter(client=profile).select_related("client")
 
@@ -120,12 +170,17 @@ def client_dashboard(request):
 @login_required
 def dashboard_products(request):
 
-    if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not _has_dashboard_access(effective_user):
         return redirect("login")
 
     products = Product.objects.select_related("client", "client__user").order_by("-id")
-    if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
-        products = products.filter(client=request.user.profile)
+    if not is_admin:
+        products = products.filter(client=effective_user.profile)
     paginator = Paginator(products, 20)
     page_obj = paginator.get_page(request.GET.get("page"))
 
@@ -139,7 +194,12 @@ def dashboard_products(request):
 @login_required
 def dashboard_colors(request):
 
-    if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not _has_dashboard_access(effective_user):
         return redirect("login")
 
     colors = Color.objects.order_by("-id")
@@ -156,10 +216,15 @@ def dashboard_colors(request):
 @login_required
 def dashboard_product_create(request):
 
-    if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not _has_dashboard_access(effective_user):
         return redirect("login")
 
-    if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    if not is_admin:
         raise PermissionDenied()
 
     if request.method == "POST":
@@ -178,10 +243,15 @@ def dashboard_product_create(request):
 @login_required
 def dashboard_color_create(request):
 
-    if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not _has_dashboard_access(effective_user):
         return redirect("login")
 
-    if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    if not is_admin:
         raise PermissionDenied()
 
     if request.method == "POST":
@@ -200,12 +270,17 @@ def dashboard_color_create(request):
 @login_required
 def dashboard_payments(request):
 
-    if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not _has_dashboard_access(effective_user):
         return redirect("login")
 
     payments = Payment.objects.select_related("client", "client__user").order_by("-id")
-    if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
-        payments = payments.filter(client__user=request.user)
+    if not is_admin:
+        payments = payments.filter(client__user=effective_user)
     paginator = Paginator(payments, 20)
     page_obj = paginator.get_page(request.GET.get("page"))
 
@@ -219,10 +294,15 @@ def dashboard_payments(request):
 @login_required
 def dashboard_payment_create(request):
 
-    if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not _has_dashboard_access(effective_user):
         return redirect("login")
 
-    if getattr(request.user, "role", "") != "client":
+    if getattr(effective_user, "role", "") != "client":
         raise PermissionDenied()
 
     if request.method == "POST":
@@ -230,7 +310,7 @@ def dashboard_payment_create(request):
 
         if form.is_valid():
             payment = form.save(commit=False)
-            payment.client = request.user.profile
+            payment.client = effective_user.profile
             payment.save()
             return redirect("dashboard_payments")
 
@@ -243,10 +323,15 @@ def dashboard_payment_create(request):
 @login_required
 def dashboard_product_edit(request, pk):
 
-    if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not _has_dashboard_access(effective_user):
         return redirect("login")
 
-    if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    if not is_admin:
         raise PermissionDenied()
 
     product = get_object_or_404(Product, pk=pk)
@@ -267,10 +352,15 @@ def dashboard_product_edit(request, pk):
 @login_required
 def dashboard_color_edit(request, pk):
 
-    if not hasattr(request.user, "profile") and not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not _has_dashboard_access(effective_user):
         return redirect("login")
 
-    if not (request.user.is_staff or getattr(request.user, "role", "") == "admin"):
+    if not is_admin:
         raise PermissionDenied()
 
     color = get_object_or_404(Color, pk=pk)
@@ -291,8 +381,12 @@ def dashboard_color_edit(request, pk):
 @login_required
 def export_transactions_csv(request):
 
-    is_admin = request.user.is_staff or getattr(request.user, "role", "") == "admin"
-    if not is_admin and not hasattr(request.user, "profile"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not is_admin and not hasattr(effective_user, "profile"):
         return redirect("login")
 
     selected_client_id = request.GET.get("client")
@@ -335,7 +429,7 @@ def export_transactions_csv(request):
     if is_admin and selected_client_id:
         transactions = transactions.filter(client_id=selected_client_id)
     elif not is_admin:
-        transactions = transactions.filter(client__user=request.user)
+        transactions = transactions.filter(client__user=effective_user)
     transactions = apply_date_filter(transactions)
 
     response = HttpResponse(content_type="text/csv")
@@ -358,8 +452,12 @@ def export_transactions_csv(request):
 @login_required
 def export_transactions_pdf(request):
 
-    is_admin = request.user.is_staff or getattr(request.user, "role", "") == "admin"
-    if not is_admin and not hasattr(request.user, "profile"):
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+
+    effective_user, is_admin = _effective_context(request)
+    if not is_admin and not hasattr(effective_user, "profile"):
         return redirect("login")
 
     selected_client_id = request.GET.get("client")
@@ -402,7 +500,7 @@ def export_transactions_pdf(request):
     if is_admin and selected_client_id:
         transactions = transactions.filter(client_id=selected_client_id)
     elif not is_admin:
-        transactions = transactions.filter(client__user=request.user)
+        transactions = transactions.filter(client__user=effective_user)
     transactions = apply_date_filter(transactions)
 
     from reportlab.lib.pagesizes import A4
@@ -421,7 +519,7 @@ def export_transactions_pdf(request):
     y = height - 80
     pdf.setFont("Helvetica-Bold", 8)
     headers = ["Sana", "Mijoz", "Tovar", "Rang", "Soni", "Narxi", "Summasi"]
-    x_positions = [40, 90, 170, 270, 340, 390, 450]
+    x_positions = [40, 90, 150, 250, 305, 360, 430]
     for i, h in enumerate(headers):
         pdf.drawString(x_positions[i], y, h)
     y -= 12
@@ -439,8 +537,8 @@ def export_transactions_pdf(request):
 
         pdf.drawString(x_positions[0], y, t.date.strftime("%d.%m.%Y") if t.date else "")
         pdf.drawString(x_positions[1], y, str(t.client)[:12])
-        pdf.drawString(x_positions[2], y, (t.product.name if t.product else "")[:16])
-        pdf.drawString(x_positions[3], y, (str(t.color) if t.color else "")[:8])
+        pdf.drawString(x_positions[2], y, (t.product.name if t.product else "")[:18])
+        pdf.drawString(x_positions[3], y, (str(t.color) if t.color else "")[:10])
         pdf.drawRightString(x_positions[4] + 25, y, f"{t.quantity:.2f}")
         pdf.drawRightString(x_positions[5] + 35, y, f"{t.price:.2f}" if t.price is not None else "")
         pdf.drawRightString(x_positions[6] + 50, y, f"{t.total_amount:.2f}" if t.total_amount is not None else "")

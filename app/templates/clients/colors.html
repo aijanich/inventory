@@ -66,7 +66,7 @@
             <h2>Ro‘yxat</h2>
             <div class="panel-actions">
                 <span class="count">{{ page_obj.paginator.count|intcomma }} ta</span>
-                {% if request.user.is_staff or request.user.role == "admin" %}
+                {% if effective_is_admin %}
                     <a class="btn small" href="/dashboard/colors/new/">+ Yangi</a>
                 {% endif %}
             </div>
@@ -81,7 +81,7 @@
                         <th>Kod</th>
                         <th>Izoh</th>
                         <th>Rasm</th>
-                        {% if request.user.is_staff or request.user.role == "admin" %}
+                        {% if effective_is_admin %}
                             <th></th>
                         {% endif %}
 
@@ -103,7 +103,7 @@
                                     -
                                 {% endif %}
                             </td>
-                            {% if request.user.is_staff or request.user.role == "admin" %}
+                            {% if effective_is_admin %}
                                 <td class="action">
                                     <a href="/dashboard/colors/{{ c.id }}/edit/">Tahrirlash</a>
                                 </td>

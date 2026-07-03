@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'products',
     'colors.apps.ColorsConfig',
     "expenses",
+    "orders",
     'rest_framework',
 ]
 
@@ -87,6 +88,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'app.acting.acting_context',
             ],
         },
     },

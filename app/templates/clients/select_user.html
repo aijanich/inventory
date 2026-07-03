@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Foydalanuvchi tanlash</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f3f5f8;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #0f766e;
+            --shadow: 0 14px 36px rgba(15, 23, 42, 0.12);
+            --radius: 18px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+            color: var(--text);
+            background: radial-gradient(900px 500px at 15% -10%, #dbeafe, transparent 60%),
+                radial-gradient(900px 600px at 90% 10%, #fef3c7, transparent 60%),
+                var(--bg);
+        }
+        .card {
+            width: min(460px, 92vw);
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 28px 26px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e5e7eb;
+        }
+        h1 { margin: 0 0 8px; font-size: 24px; }
+        p { margin: 0 0 20px; color: var(--muted); }
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            font-size: 14px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            padding: 12px 16px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn.ghost {
+            background: #fff;
+            color: var(--primary);
+            border-color: #cbd5f5;
+        }
+        .error {
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <h1>Foydalanuvchi tanlang</h1>
+        <p>Admin sifatida oddiy foydalanuvchi nomidan ishlash uchun foydalanuvchini tanlang.</p>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <label for="user_id">Oddiy foydalanuvchi</label>
+            <select id="user_id" name="user_id" required>
+                <option value="">Tanlang</option>
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+            <div class="actions">
+                <button class="btn" type="submit">Davom etish</button>
+                <a class="btn ghost" href="{% url 'logout' %}">Chiqish</a>
+            </div>
+        </form>
+    </section>
+</body>
+</html>

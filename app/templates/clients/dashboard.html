@@ -257,7 +257,7 @@
         </section>
 
         <section class="grid">
-            {% if request.user.is_staff or request.user.role == "admin" %}
+            {% if effective_is_admin %}
                 <div class="panel">
                     <div class="panel-header">
                         <h2>Oxirgi tovarlar</h2>
@@ -273,7 +273,7 @@
                                 <tr>
                                     <th>Sana</th>
                                     <th class="gap-right-sm">Tovar</th>
-                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                    {% if effective_is_admin %}
                                         <th>Mijoz</th>
                                     {% endif %}
                                     <th class="gap-right-xs">Rang</th>
@@ -288,7 +288,7 @@
                                     <tr>
                                         <td>{{ t.date|date:"d.m.Y" }}</td>
                                         <td class="gap-right-sm">{{ t.product.name }}</td>
-                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                    {% if effective_is_admin %}
                                         <td>{{ t.client }}</td>
                                     {% endif %}
                                         <td class="gap-right-xs">{{ t.color|default:"-" }}</td>
@@ -321,7 +321,7 @@
                                     <th>Sana</th>
                                     <th class="gap-right-lg">Summasi</th>
                                     <th>Izoh</th>
-                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                    {% if effective_is_admin %}
                                         <th>Mijoz</th>
                                     {% endif %}
                                     <th></th>
@@ -333,10 +333,10 @@
                                         <td>{{ p.date|date:"d.m.Y" }}</td>
                                         <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
                                         <td>{{ p.note|default:"-" }}</td>
-                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                    {% if effective_is_admin %}
                                         <td>{{ p.client }}</td>
                                     {% endif %}
-                                        {% if request.user.role == "client" %}
+                                        {% if effective_user.role == "client" %}
                                             <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
                                         {% else %}
                                             <td></td>
@@ -367,7 +367,7 @@
                                     <th>Sana</th>
                                     <th class="gap-right-lg">Summasi</th>
                                     <th>Izoh</th>
-                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                    {% if effective_is_admin %}
                                         <th>Mijoz</th>
                                     {% endif %}
                                     <th></th>
@@ -379,10 +379,10 @@
                                         <td>{{ p.date|date:"d.m.Y" }}</td>
                                         <td class="amount gap-right-lg">{{ p.amount|floatformat:2|intcomma }}</td>
                                         <td>{{ p.note|default:"-" }}</td>
-                                        {% if request.user.is_staff or request.user.role == "admin" %}
+                                        {% if effective_is_admin %}
                                             <td>{{ p.client }}</td>
                                         {% endif %}
-                                        {% if request.user.role == "client" %}
+                                        {% if effective_user.role == "client" %}
                                             <td class="action"><a href="{% url 'edit_payment' p.id %}">Tahrirlash</a></td>
                                         {% else %}
                                             <td></td>
@@ -411,7 +411,7 @@
                                 <tr>
                                     <th>Sana</th>
                                     <th class="gap-right-sm">Tovar</th>
-                                    {% if request.user.is_staff or request.user.role == "admin" %}
+                                    {% if effective_is_admin %}
                                         <th>Mijoz</th>
                                     {% endif %}
                                     <th class="gap-right-xs">Rang</th>
@@ -426,7 +426,7 @@
                                     <tr>
                                         <td>{{ t.date|date:"d.m.Y" }}</td>
                                         <td class="gap-right-sm">{{ t.product.name }}</td>
-                                        {% if request.user.is_staff or request.user.role == "admin" %}
+                                        {% if effective_is_admin %}
                                             <td>{{ t.client }}</td>
                                         {% endif %}
                                         <td class="gap-right-xs">{{ t.color|default:"-" }}</td>

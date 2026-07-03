@@ -4,19 +4,25 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from clients.models import ClientProfile
+from app.acting import is_effective_admin, redirect_admin_to_user_choice
 from .forms import ClientUserCreateForm, ClientUserUpdateForm
 from .models import User
 
 
 def _require_admin(request):
-    is_admin = request.user.is_staff or getattr(request.user, "role", "") == "admin"
-    if not is_admin:
+    choice_redirect = redirect_admin_to_user_choice(request)
+    if choice_redirect:
+        return choice_redirect
+    if not is_effective_admin(request):
         raise PermissionDenied()
+    return None
 
 
 @login_required
 def dashboard_users(request):
-    _require_admin(request)
+    redirect_response = _require_admin(request)
+    if redirect_response:
+        return redirect_response
 
     qs = (
         User.objects.filter(role="client")
@@ -34,7 +40,9 @@ def dashboard_users(request):
 
 @login_required
 def dashboard_user_create(request):
-    _require_admin(request)
+    redirect_response = _require_admin(request)
+    if redirect_response:
+        return redirect_response
 
     if request.method == "POST":
         form = ClientUserCreateForm(request.POST)
@@ -48,7 +56,9 @@ def dashboard_user_create(request):
 
 @login_required
 def dashboard_user_edit(request, pk: int):
-    _require_admin(request)
+    redirect_response = _require_admin(request)
+    if redirect_response:
+        return redirect_response
 
     user = get_object_or_404(User, pk=pk, role="client")
     profile = getattr(user, "profile", None)
@@ -69,4 +79,3 @@ def dashboard_user_edit(request, pk: int):
         "users/user_form.html",
         {"form": form, "mode": "edit", "user_obj": user},
     )
-

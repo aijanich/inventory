@@ -1,0 +1,74 @@
+{% extends "clients/base_dashboard.html" %}
+{% load humanize %}
+
+{% block title %}Orders{% endblock %}
+{% block page_title %}Orders{% endblock %}
+{% block menu_orders_active %}active{% endblock %}
+
+{% block header_after_menu %}
+    <div style="margin-top: 14px;">
+        <a class="btn" href="{% url 'dashboard_order_create' %}">+ New order</a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="panel-header">
+            <h2>List</h2>
+            <span class="count">{{ page_obj.paginator.count|intcomma }} ta</span>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Foydalanuvchi</th>
+                        <th>Tovar</th>
+                        <th>Rangi</th>
+                        <th>Soni</th>
+                        <th>O'lchamlari</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.user.username }}</td>
+                            <td>{{ order.product.name }}</td>
+                            <td>{{ order.color.name }}</td>
+                            <td>{{ order.count|intcomma }}</td>
+                            <td>{{ order.sizes|linebreaksbr }}</td>
+                            <td>
+                                <a href="{% url 'dashboard_order_edit' order.id %}">Tahrirlash</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">
+                                <p class="empty">Hozircha orderlar yo'q.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination">
+                <div>
+                    {% if page_obj.has_previous %}
+                        <a class="btn ghost" href="?page={{ page_obj.previous_page_number }}">Oldingi</a>
+                    {% endif %}
+                </div>
+                <div class="page-info">
+                    Sahifa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </div>
+                <div>
+                    {% if page_obj.has_next %}
+                        <a class="btn ghost" href="?page={{ page_obj.next_page_number }}">Keyingi</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
