@@ -20,8 +20,8 @@ from app.acting import (
     get_effective_user,
     is_effective_admin,
     is_real_admin,
-    ordinary_users,
     redirect_admin_to_user_choice,
+    selectable_users,
 )
 
 
@@ -39,7 +39,7 @@ def admin_user_select(request):
     if not is_real_admin(request.user):
         return redirect("client_dashboard")
 
-    users = ordinary_users()
+    users = selectable_users()
     if request.method == "POST":
         user_id = request.POST.get("user_id")
         selected_user = users.filter(pk=user_id).first()
@@ -49,7 +49,7 @@ def admin_user_select(request):
         return render(
             request,
             "clients/select_user.html",
-            {"users": users, "error": "Iltimos, oddiy foydalanuvchini tanlang."},
+            {"users": users, "error": "Iltimos, foydalanuvchini tanlang."},
         )
 
     return render(request, "clients/select_user.html", {"users": users})

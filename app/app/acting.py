@@ -15,10 +15,10 @@ def is_admin_user(user):
     return user.is_staff or getattr(user, "role", "") == "admin"
 
 
-def ordinary_users():
+def selectable_users():
     return (
         get_user_model()
-        .objects.filter(role="client", is_staff=False)
+        .objects.filter(is_active=True)
         .order_by("username")
     )
 
@@ -35,7 +35,7 @@ def get_effective_user(request):
         return request.user
 
     try:
-        return ordinary_users().get(pk=acting_user_id)
+        return selectable_users().get(pk=acting_user_id)
     except get_user_model().DoesNotExist:
         request.session.pop(ACTING_USER_SESSION_KEY, None)
         return request.user

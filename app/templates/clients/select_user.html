@@ -86,7 +86,7 @@
 <body>
     <section class="card">
         <h1>Foydalanuvchi tanlang</h1>
-        <p>Admin sifatida oddiy foydalanuvchi nomidan ishlash uchun foydalanuvchini tanlang.</p>
+        <p>Qaysi foydalanuvchi roli bilan ishlashni tanlang. Admin tanlansa, admin huquqlari bilan davom etadi.</p>
 
         {% if error %}
             <div class="error">{{ error }}</div>
@@ -94,11 +94,11 @@
 
         <form method="post">
             {% csrf_token %}
-            <label for="user_id">Oddiy foydalanuvchi</label>
+            <label for="user_id">Foydalanuvchi</label>
             <select id="user_id" name="user_id" required>
                 <option value="">Tanlang</option>
                 {% for user in users %}
-                    <option value="{{ user.id }}">{{ user.username }}</option>
+                    <option value="{{ user.id }}">{{ user.username }} - {{ user.get_role_display }}</option>
                 {% endfor %}
             </select>
             <div class="actions">
